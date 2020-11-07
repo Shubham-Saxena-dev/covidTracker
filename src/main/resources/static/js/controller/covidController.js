@@ -16,7 +16,7 @@ covidApp.controller('covidController',
 				$scope.viewComment=false;
 				$scope.addCovidComments = {
 					 comments: " ",
-					word: /^\s*\w*\s*$/
+					word: /\s*\w*\s*$/
 				}
 				$scope.selectedValue='';
 				$scope.method='';
@@ -29,15 +29,19 @@ covidApp.controller('covidController',
 				$scope.enableLoader=true;
 					covidDetailsService.fetchCountryCodeMap().then(function(data){
 						if(data['error']){
-							alert(data['error']);
+							console.log(data['error']);
 							$scope.countryData=data['response'];
 						}else{
 							console.log("country map data="+data);
+							if(data && data.code && data.countries) {
+								data.code.sort();
+								data.countries.sort();
+							}
 							$scope.countryData=data;
 						}
 						$scope.enableLoader=false;
 					},function(error){
-						alert("Error Occurred");
+						console.error("Error Occurred");
 					});
 				}
 				
@@ -46,27 +50,28 @@ covidApp.controller('covidController',
 					covidDetailsService.fetchCountries().then(function(data){
 					
 						if(data['error']){
-							alert(data['error']);
+							console.error(data['error']);
 							$scope.countries=data['response'];
 						}else{
 							$scope.countries=data;
 							console.log("Countries Data"+$scope.countries);
 						}
+						$scope.countries =$filter('orderBy')($scope.countries,"-favourite");
 						$scope.enableLoader=false;
 					},function(error){
-							alert("Error Occurred");
+							console.error("Error Occurred");
 					});
 				}
 				
 				function success(data){
-					console.log("data="+data);
+					console.log("Success");
 				}
 				
 				$scope.getTotal= function(){
 				$scope.enableLoader=true;
 					covidDetailsService.getTotal().then(function(data){
 						if(data['error']){
-							alert(data['error']);
+							console.error(data['error']);
 							$scope.covidData=data['response']
 						}else{
 							$scope.covidData=data
@@ -74,7 +79,7 @@ covidApp.controller('covidController',
 						}
 						$scope.enableLoader=false;
 					},function(error){
-						alert("Error Occurred");
+						console.error("Error Occurred");
 					});
 
 				}
@@ -90,7 +95,7 @@ covidApp.controller('covidController',
 					$scope.enableLoader=true;
 					covidDetailsService.loadCountryDataByName(name).then(function(data){
 						if(data['error']){
-							alert(data['error']);
+							console.error(data['error']);
 							$scope.countryByName=data['response'];
 						}else{
 							$scope.countryByName=data;
@@ -99,7 +104,7 @@ covidApp.controller('covidController',
 						$scope.enableLoader=false;
 					
 					}, function(err){
-						alert("Error Occurred");
+						console.error("Error Occurred");
 					});
 					
 				}
@@ -116,14 +121,18 @@ covidApp.controller('covidController',
 					$scope.enableLoader=true;
 					covidDetailsService.loadCountryDataByCode(code).then(function(data){
 					if(data['error']){
-						alert(data['error']);
+						console.error(data['error']);
 						$scope.countryByCode=data['response'];
 					}else{
 						$scope.countryByCode=data;
+						if($scope.countryByCode[0].comments.length>0){
+							$scope.viewComment = true;
+							$scope.commentSection = true;
+						}
 					}
 					$scope.enableLoader=false;
 					}, function(err){
-						alert("Error Occurred");
+						console.error("Error Occurred");
 					});
 					
 				}
@@ -141,6 +150,7 @@ covidApp.controller('covidController',
 					$scope.showAddComment=false;
 					$scope.selectedValue='';
 					$scope.viewComment=false;
+					$scope.data =$filter('orderBy')($scope.data);
 				}
 				
 				$scope.enableCodePage=function(){
@@ -156,6 +166,7 @@ covidApp.controller('covidController',
 					$scope.showAddComment=false;
 					$scope.viewComment=false;
 					$scope.selectedValue='';
+					$scope.data = $filter('orderBy')($scope.data);
 				}
 				
 				$scope.loadCovidDetailsByInput =  function(selectedValue){
@@ -186,15 +197,15 @@ covidApp.controller('covidController',
 				$scope.enableLoader=true;
 					covidDetailsService.addCommentByCode(value,$scope.addCovidComments.comments).then(function(data){
 						if(data['error']){
-							alert(data['error']);
+							console.error(data['error']);
 						}else{
-							alert("updated");
+							alert("Comments added");
 						}
 						$scope.addCovidComments.comments='';
 						$scope.enableLoader=false;
 					
 					}, function(err){
-						alert("Error Occurred");
+						console.error("Error Occurred");
 					});
 				}
 				
@@ -202,14 +213,14 @@ covidApp.controller('covidController',
 				$scope.enableLoader=true;
 					covidDetailsService.addCommentByName(value,$scope.addCovidComments.comments).then(function(data){
 					if(data['error']){
-						alert(data['error']);
+						console.error(data['error']);
 					}else{
 						alert("Updated Comment by Name");
 					}
 					$scope.enableLoader=false;
 						$scope.addCovidComments.comments='';
 					}, function(err){
-						alert("Error Occurred");
+						console.error("Error Occurred");
 					});
 				}
 				
@@ -278,13 +289,14 @@ covidApp.controller('covidController',
 					country.favourite=!country.favourite;
 					covidDetailsService.updateCountry(country).then(function(data){
 					if(data['error']){
-						alert(data['error']);
+						console.error(data['error']);
 					}else{
-						alert("Country favourites updated");
+						alert("Country favourites updated with "+country.name);
 					}
+					$scope.countries = $filter('orderBy')($scope.countries, '-favourite');
 					},
 					function(error){
-						alert("Error Occurred");
+						console.error("Error Occurred");
 					});
 					
 				}
@@ -303,7 +315,7 @@ covidApp.controller('covidController',
 					if($scope.method === 'code'){
 						covidDetailsService.retrieveCommentByCode($scope.selectedValue).then(function(data){
 						if(data['error']){
-						alert(data['error']);
+						console.error(data['error']);
 						$scope.myComment=data['response'];
 					}else{
 							$scope.myComment=data;
@@ -317,7 +329,7 @@ covidApp.controller('covidController',
 					
 						covidDetailsService.retrieveCommentByName($scope.selectedValue).then(function(data){
 						if(data['error']){
-						alert(data['error']);
+						console.error(data['error']);
 						$scope.myComment=data['response'];
 					}else{
 						$scope.myComment=data;

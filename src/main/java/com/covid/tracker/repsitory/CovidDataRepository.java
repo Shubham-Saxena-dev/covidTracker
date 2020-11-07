@@ -6,15 +6,15 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.covid.tracker.model.CovidData;
+import org.springframework.stereotype.Repository;
 
-
+@Repository
 public interface CovidDataRepository extends MongoRepository<CovidData, ObjectId> {
 
-	public List<CovidData> findAllByCountry(String country);
+	List<CovidData> findAllByCountry(String country);
 	
-	public CovidData findByCountry(String country);
-	public CovidData findByCode(String code);
-	
-	public List<CovidData> findAllByCode(String code);
+	CovidData findByCountry(String country);
+	CovidData findByCode(String code);
+	List<CovidData> findAllByCode(String code);
 	
 }
